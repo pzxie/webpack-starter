@@ -1,0 +1,110 @@
+整个项目搭建步骤如下：
+    1、初始化npm
+        npm init -y
+
+    2、安装webpack在项目中（不安装在全局，这对于项目的webpack升级有好处）
+        npm i -D webpack webpack-cli
+
+    3、初始化项目结构
+        a、新建 config、src、dist文件夹
+        b、新建index.html在dist文件夹
+        c、在config文件夹中初始化webpack.config.js
+
+    4、安装babel
+        npm i -D babel-core babel-loader babel-plugin-transform-runtime babel-preset-env
+        如果有用到jsx语法 则还需要安装 babel-plugin-transform-react-jsx
+
+    5、初始化babel、并进行相应设置
+        a、新建.babelrc 文件
+        b、进行相应设置，详情见babelrc文件
+
+    6、在webpack.config.js中添加babel loader的设置
+
+    7、资源文件处理——css样式的处理
+        a、安装css相关loader
+            npm install --D style-loader css-loader less-loader less
+
+        b、设置相关loader
+        c、如果只用以上loader进行开发，最后所有的样式会被以style标签的形式添加至head部分。该形式不利于页面表现，以及不利于资源缓存，所以应该将其弄成单独的样式文件
+        d、安装extract-text-webpack-plugin，该插件可以使文件单独分离出来，具体使用见配置
+            npm i -D extract-text-webpack-plugin
+
+    7.2 资源文件处理——图片，字体的处理
+        a、安装相关loader
+            npm i -D file-loader url-loader
+        b、进行相关配置，具体请见配置文件
+
+    7.3 资源文件处理——csv,xml文件数据的加载
+        a、安装相关loader
+            npm i -D csv-loader xml-loader
+        b、进行相关配置，具体请见配置文件
+
+    8、css的压缩（生产环境使用）
+        a、安装插件optimize-css-assets-webpack-plugin
+            npm i -D optimize-css-assets-webpack-plugin
+        b、添加该插件至配置中，具体见配置文件
+
+    9、此刻如果编译，则会生成对应打包后的js文件，以及公共css文件，此刻应该再使用html-webpack-plugin 进行html的一个自动添加样式和js文件
+        a、安装html-webpack-plugin
+            npm i -D html-webpack-plugin
+        b、该插件的配置应该在extract-text-webpack-plugin之前，详情见配置文件
+
+    10、js的压缩 （生产环节使用）
+        a、安装插件uglifyjs-webpack-plugin
+            npm i -D uglifyjs-webpack-plugin
+        b、添加该插件至配置中，具体见配置文件
+
+    11、devtool的设置
+        a、开发环境： devtool: '#cheap-module-eval-source-map'
+        b、生产环境： devtool: false 或者 '#source-map'(如果这里使用了sourcempa, 则uglifyjs-webpack-plugin的配置中sourceMap需要设置为true)
+
+    12、静态文件夹的copy
+        如果在开发中使用绝对路径（以/开头的路径）,则不会被webpack进行打包处理，所以需要将其copy至生产环境打包后的目录中
+        a、安装插件copy-webpack-plugin
+            npm  i -D copy-webpack-plugin
+        b、添加该插件至配置中，具体请见配置文件
+
+    13、eslint配置
+        a、安装相关loader以及相关依赖
+            npm i -D eslint eslint-loader eslint-friendly-formatter babel-eslint eslint-plugin-html eslint-config-standard
+             eslint-plugin-import eslint-plugin-node eslint-plugin-promise eslint-plugin-standard
+        b、eslint-loader相关配置见webpack配置
+
+        c、初始化.eslintrc。在项目根目录新建文件.eslintrc
+        d、具体eslintrc配置详情见文件。
+        e、初始化.eslintignore文件，具体内容见文件
+
+    14、环境指定。许多 library 将通过与 process.env.NODE_ENV 环境变量关联，以决定 library 中应该引用哪些内容
+        a、添加插件。应该添加在插件数组的开头
+             new webpack.DefinePlugin({
+                'process.env.NODE_ENV': JSON.stringify('production' | 'development')
+             })
+
+    15、postcss后处理器设置。添加autoprefixer,用于自动添加css前缀
+        a、安装相关loader
+            npm i -D postcss-loader autoprefixer
+        b、在配置文件中添加相应loader配置，开发和生产环境不一样，详情见相关配置文件
+        c、在项目根目录新建postcss配置文件.postcssrc.js, 具体配置参考该文件
+        d、在package.json 中添加browserslist，具体见文件
+
+    16、至此，项目的cli搭建完毕，不过，还有缺点，没有支持’热重载‘，当然，这是对于开发环境。生产环境根据以上步骤即可
+        热重载步骤：
+        a、添加热重载插件至plugins，这是webpack内部实现，不需要安装其他包
+              new webpack.NamedModulesPlugin(),
+              new webpack.HotModuleReplacementPlugin(),
+        b、将入口entry,由纯入口路径字符串，更改为数组，并将 'webpack-hot-middleware/client'作为数组的首个元素
+        c、新建文件config/webpack.dev.hot.js,具体配置见该文件。并将path.resolve(__dirname, './webpack.dev.hot.js')作为entry数组的第一个元素
+        d、output的filename中如果有chunkhash，则将其修改为hash
+        e、在配置中添加 mode: 'development',配置
+        f、使用node来进行热重载。具体见script/dev-server.js
+
+
+
+
+
+
+    aa、错误信息插件的添加 （开发环境使用）
+        a、安装插件friendly-errors-webpack-plugin
+            npm i -D friendly-errors-webpack-plugin
+        b、添加该插件至配置中，见配置文件
+
